@@ -6,12 +6,12 @@
 //
 
 import UIKit
+import SnapKit
 
 class ViewController: UIViewController {
   private let titleLabel: UILabel = {
     let label = UILabel()
     label.text = "VC1"
-    label.translatesAutoresizingMaskIntoConstraints = false
     label.textColor = .black
     return label
   }()
@@ -21,7 +21,22 @@ class ViewController: UIViewController {
     let button = UIButton()
     button.setTitle("VC1 위에 떠있는 버튼", for: .normal)
     button.setTitleColor(.red, for: .normal)
-    button.translatesAutoresizingMaskIntoConstraints = false
+    return button
+  }()
+  private let openButton: UIButton = {
+    let button = UIButton()
+    button.setTitle("open", for: .normal)
+    button.setTitleColor(.systemBlue, for: .normal)
+    button.setTitleColor(.blue, for: .highlighted)
+    button.addTarget(self, action: #selector(openView), for: .touchUpInside)
+    return button
+  }()
+  private let closeButton: UIButton = {
+    let button = UIButton()
+    button.setTitle("close", for: .normal)
+    button.setTitleColor(.systemBlue, for: .normal)
+    button.setTitleColor(.blue, for: .highlighted)
+    button.addTarget(self, action: #selector(closeView), for: .touchUpInside)
     return button
   }()
   
@@ -31,24 +46,62 @@ class ViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    self.myView.translatesAutoresizingMaskIntoConstraints = false
     self.view.addSubview(self.titleLabel)
     self.view.addSubview(self.myView)
     self.view.addSubview(self.button)
+    self.view.addSubview(self.openButton)
+    self.view.addSubview(self.closeButton)
     
-    NSLayoutConstraint.activate([
-      self.titleLabel.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 50),
-      self.titleLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-    ])
-    NSLayoutConstraint.activate([
-      self.myView.leftAnchor.constraint(equalTo: self.view.leftAnchor),
-      self.myView.rightAnchor.constraint(equalTo: self.view.rightAnchor),
-      self.myView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
-      self.myView.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 300),
-    ])
-    NSLayoutConstraint.activate([
-      self.button.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -150),
-      self.button.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-    ])
+    self.titleLabel.snp.makeConstraints {
+      $0.top.equalToSuperview().inset(50)
+      $0.centerX.equalToSuperview()
+    }
+    self.openButton.snp.makeConstraints {
+      $0.centerX.equalToSuperview()
+      $0.top.equalToSuperview().inset(120)
+    }
+    self.closeButton.snp.makeConstraints {
+      $0.centerX.equalToSuperview()
+      $0.top.equalToSuperview().inset(160)
+    }
+    self.myView.snp.makeConstraints {
+      $0.left.right.bottom.equalToSuperview()
+      $0.top.equalTo(self.view.snp.bottom).priority(999)
+    }
+    self.button.snp.makeConstraints {
+      $0.bottom.equalToSuperview().inset(150)
+      $0.centerX.equalToSuperview()
+    }
+  }
+  
+  @objc private func openView() {
+    DispatchQueue.main.async {
+      self.myView.snp.remakeConstraints {
+        $0.edges.equalToSuperview()
+      }
+      UIView.animate(
+        withDuration: 0.3,
+        delay: 0,
+        options: .curveEaseInOut,
+        animations: { self.view.layoutIfNeeded() },
+        completion: nil
+      )
+    }
+  }
+  
+  @objc private func closeView() {
+    DispatchQueue.main.async {
+      self.myView.snp.remakeConstraints {
+        $0.left.right.bottom.equalToSuperview()
+        $0.top.equalTo(self.view.snp.bottom).priority(999)
+      }
+      UIView.animate(
+        withDuration: 0.3,
+        delay: 0,
+        options: .curveEaseInOut,
+        animations: { self.view.layoutIfNeeded() },
+        completion: nil
+      )
+    }
   }
 }
