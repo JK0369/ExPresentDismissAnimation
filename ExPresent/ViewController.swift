@@ -15,7 +15,6 @@ class ViewController: UIViewController {
     label.textColor = .black
     return label
   }()
-  private var vc2: VC2?
   private let aboveButton: UIButton = {
     let button = UIButton()
     button.setTitle("VC1 위에 떠있는 버튼", for: .normal)
@@ -38,7 +37,9 @@ class ViewController: UIViewController {
     button.addTarget(self, action: #selector(closeView), for: .touchUpInside)
     return button
   }()
-  var nav: UINavigationController? // strong self해주기 위함 (안해주면 VC2에서 nil이 되어 push가 안됨)
+  
+  private var vc2: VC2?
+  private var nav: UINavigationController? // strong self해주기 위함 (안해주면 VC2에서 nil이 되어 push가 안됨)
   
   override func viewDidLoad() {
     super.viewDidLoad()
