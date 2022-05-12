@@ -6,12 +6,16 @@
 //
 
 import UIKit
+import SnapKit
 
 class VC2: UIViewController {
+  private let containerView: UIView = {
+    let view = UIView()
+    return view
+  }()
   private let titleLabel: UILabel = {
     let label = UILabel()
     label.text = "VC2"
-    label.translatesAutoresizingMaskIntoConstraints = false
     label.textColor = .black
     return label
   }()
@@ -20,58 +24,69 @@ class VC2: UIViewController {
     button.setTitle("다음 화면 push", for: .normal)
     button.setTitleColor(.systemBlue, for: .normal)
     button.setTitleColor(.blue, for: .highlighted)
-    button.addTarget(self, action: #selector(didTap), for: .touchUpInside)
-    button.translatesAutoresizingMaskIntoConstraints = false
+    button.addTarget(self, action: #selector(pushVC), for: .touchUpInside)
     return button
   }()
-  private let myView: UIView = {
-    let view = UIView()
-    view.backgroundColor = .systemGray
-    return view
-  }()
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    self.view.backgroundColor = .systemGreen
-    self.view.addSubview(self.myView)
-    self.view.addSubview(self.titleLabel)
-    self.view.addSubview(self.button)
-    NSLayoutConstraint.activate([
-      self.titleLabel.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 30),
-      self.titleLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-    ])
-    NSLayoutConstraint.activate([
-      self.button.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 70),
-      self.button.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-    ])
+  
+  // viewDidLoad가 아닌 init()에서 설정안하면, show()메소드가 호출되었을때 containerView가 아직 addSubview되지 않은 상태라 크래시가 발생
+  init() {
+    super.init(nibName: nil, bundle: nil)
+    self.view.backgroundColor = .clear
+    self.containerView.backgroundColor = .systemGreen
+    
+    self.view.addSubview(self.containerView)
+    self.containerView.addSubview(self.titleLabel)
+    self.containerView.addSubview(self.button)
+    
+    self.containerView.snp.makeConstraints {
+      $0.left.right.equalToSuperview()
+      $0.top.equalTo(self.view.snp.bottom).priority(999)
+    }
+    self.titleLabel.snp.makeConstraints {
+      $0.top.equalToSuperview().inset(30)
+      $0.centerX.equalToSuperview()
+    }
+    self.button.snp.makeConstraints {
+      $0.top.equalToSuperview().inset(70)
+      $0.centerX.equalToSuperview()
+    }
+    
+    // layoutIfNeeded호출 안해줄 경우, 좌측 상단에서 레이아웃이 시작
+    self.view.layoutIfNeeded()
+  }
+  required init?(coder: NSCoder) {
+    fatalError()
   }
   
-  @objc private func didTap() {
+  @objc private func pushVC() {
     let vc = VC3()
     self.navigationController?.pushViewController(vc, animated: true)
   }
   
-  func show() {
-    DispatchQueue.main.async {
-      self.myView.snp.remakeConstraints {
-        $0.edges.equalToSuperview()
-      }
-      UIView.animate(
-        withDuration: 0.3,
-        delay: 0,
-        options: .curveEaseInOut,
-        animations: { self.view.layoutIfNeeded() },
-        completion: nil
-      )
+  func show(completion: @escaping () -> Void = {}) {
+    self.containerView.snp.remakeConstraints {
+      $0.edges.equalToSuperview()
     }
+    UIView.animate(
+      withDuration: 0.3,
+      delay: 0,
+      options: .curveEaseInOut,
+      animations: { self.view.layoutIfNeeded() },
+      completion: { _ in completion() }
+    )
   }
   
-  func hide() {
-    DispatchQueue.main.async {
-      self.myView.snp.remakeConstraints {
-        $0.top.equalTo(self.view.snp.bottom)
-        $0.left.right.equalToSuperview()
-      }
-      self.view.layoutIfNeeded()
+  func hide(completion: @escaping () -> Void = {}) {
+    self.containerView.snp.remakeConstraints {
+      $0.left.right.equalToSuperview()
+      $0.top.equalTo(self.view.snp.bottom).priority(999)
     }
+    UIView.animate(
+      withDuration: 0.3,
+      delay: 0,
+      options: .curveEaseInOut,
+      animations: { self.view.layoutIfNeeded() },
+      completion: { _ in completion() }
+    )
   }
 }
